@@ -41,34 +41,46 @@ def input(): #take input of happiness, focus and energy
             break
 
 def writeToSpreadsheet(sheet, happiness, energy, focus, position):
-    pos = "A" + str(position) #get position eg. A2, from column name + position (line number)
-    sheet[pos] = time.strftime("%d.%m.%Y") #write date (dd.mm.yyyy) to sheet on position eg. A2
+    try:
+        pos = "A" + str(position) #get position eg. A2, from column name + position (line number)
+        sheet[pos] = time.strftime("%d.%m.%Y") #write date (dd.mm.yyyy) to sheet on position eg. A2
 
-    pos = "B" + str(position) #get position eg. B2, from column name + position (line number)
-    sheet[pos] = time.strftime("%H:%M:%S") #write time (hh:mm:ss) to sheet on position eg. B2
+        pos = "B" + str(position) #get position eg. B2, from column name + position (line number)
+        sheet[pos] = time.strftime("%H:%M:%S") #write time (hh:mm:ss) to sheet on position eg. B2
 
-    pos = "C" + str(position) #get position eg. C2, from column name + position (line number)
-    sheet[pos] = energy #write energy value to sheet on position eg. C2
+        pos = "C" + str(position) #get position eg. C2, from column name + position (line number)
+        sheet[pos] = energy #write energy value to sheet on position eg. C2
 
-    pos = "D" + str(position) #get position eg. D2, from column name + position (line number)
-    sheet[pos] = happiness #write happiness value to sheet on position eg. D2
+        pos = "D" + str(position) #get position eg. D2, from column name + position (line number)
+        sheet[pos] = happiness #write happiness value to sheet on position eg. D2
 
-    pos = "E" + str(position) #get position eg. E2, from column name + position (line number)
-    sheet[pos] = focus #write focus value to sheet on position eg. E2
+        pos = "E" + str(position) #get position eg. E2, from column name + position (line number)
+        sheet[pos] = focus #write focus value to sheet on position eg. E2
 
-    position += 1 #increase value of position (sheet line) by one
-    sheet['G2'] = position #write position value to the shell on position G2
+        position += 1 #increase value of position (sheet line) by one
+        sheet['G2'] = position #write position value to the shell on position G2
+
+        print "Data seccessfuly entered into a sheet!"
+        
+    except:
+        print "Something went wrong when entering data into a sheet! '/n' Try again!"
 
 def saveSpreadsheet(wb):
-    wb.save("/home/bostjan/Documents/sheetTest.xlsx") #save spreadsheet to /home/bostjan/...
+    try:
+        wb.save("/home/bostjan/Documents/sheetTest.xlsx") #save spreadsheet to /home/bostjan/...
+        print "File saved successfully!"
 
+    except:
+        print "Something went wrong while saving a file! File not saved! '/n' Try again!"
+        
 def wait(): #defines time between inputs
+    print time.strftime("%H:%M:%S")
     print "Waiting 10 seconds."
     time.sleep(10)
 
 def main():
     while True:
-        wb = openpyxl.load_workbook("/home/bostjan/Documents/sheetTest.xlsx") #open spreadsheet from /home/bostjan/...
+        wb = openpyxl.load_workbook("/home/bostjan/Documents/sheet.xlsx") #open spreadsheet from /home/bostjan/...
         sheet = wb.get_sheet_by_name("May") #select sheet named 'May'
         position = sheet['G2'].value #from sheet position G2 get value of position (line number)
         voiceMessage("It's time to enter your feelings.")

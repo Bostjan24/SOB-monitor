@@ -3,8 +3,44 @@ import time
 import Tkinter as tk
 import tkMessageBox
 import pyttsx
-import os
+import argparse
+import sys
 
+def getMonthAverages(filename, month):
+    wb = openpyxl.load_workbook(filename)
+    sheet = wb.get_sheet_by_name(month)
+    avrHap = 0
+    avrEne = 0
+    avrFoc = 0
+    for char in xrange(67, 70):
+        avr = 0.0
+        for row in xrange(2, sheet.max_row):
+            if  sheet[str(chr(char)) + str(row)].value == None:
+                break
+            #print sheet[str(chr(char)) + str(row)].value
+            avr += sheet[str(chr(char)) + str(row)].value
+        if char == 67:
+            avrEne = avr / (sheet.max_row - 1)
+        elif char == 68: 
+            avrHap = avr / (sheet.max_row -1)
+        else:
+            avrFoc = avr / (sheet.max_row -1)
+    print "Average happiness: %.2f \nAverage energy: %.2f \nAverage focus: %.2f" %(avrHap,
+                                                                                   avrEne, avrFoc)
+
+def createSpreadsheet(filename):
+    wb = openpyxl.Workbook()
+    sheet = wb.active
+    sheet.title = "1"
+    sheet["A1"] = "Date"
+    sheet["B1"] = "Time"
+    sheet["C1"] = "Energy"
+    sheet["D1"] = "Happiness"
+    sheet["E1"] = "Focus"
+    sheet["G1"] = "Position"
+    sheet["G2"] = 2
+    wb.save(filename)
+    
 def popupMessage(message): #show popup message
     root = tk.Tk()
     root.withdraw()
@@ -79,6 +115,24 @@ def wait(): #defines time between inputs
     time.sleep(10)
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-c", "--create-spreadsheet",
+                        help="Create new spreadsheet in current folder.")
+    parser.add_argument('-a', '--show-month-averages', nargs='+', type=str,
+                        help="Shows averages for selected month.")
+    args = parser.parse_args()
+
+    if args.create_spreadsheet is not None:
+        createSpreadsheet(args.create_spreadsheet)
+        sys.exit()
+
+    if args.show_month_averages is not None:
+        arg = args.show_month_averages
+        #print arg[0]
+        #print arg[1]
+        getMonthAverages(arg[0], arg[1])
+        sys.exit()
+    
     while True:
         wb = openpyxl.load_workbook("/home/bostjan/Documents/sheet.xlsx") #open spreadsheet from /home/bostjan/...
         sheet = wb.get_sheet_by_name("May") #select sheet named 'May'

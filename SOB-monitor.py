@@ -10,9 +10,9 @@ import os
 def restartProgram():
     python = sys.executable
     os.execl(python, python, * sys.argv)
-def getWorksheetAverages(filename, worksheet):
+def getWorksheetAverages(worksheet):
     try:
-        wb = openpyxl.load_workbook(filename)
+        wb = openpyxl.load_workbook("SOBm-data.xlsx")
         sheet = wb.get_sheet_by_name(worksheet)
         avrHap = 0
         avrEne = 0
@@ -30,15 +30,16 @@ def getWorksheetAverages(filename, worksheet):
                 avrHap = avr / (sheet.max_row -1)
             else:
                 avrFoc = avr / (sheet.max_row -1)
-        print "Average happiness: %.2f \nAverage energy: %.2f \nAverage focus: %.2f" %(avrHap,
-                                                                                       avrEne, avrFoc)
+        print "Average happiness: {:.2f}\nAverage energy: {:.2f}\nAverage focus: {:.2f}".format(avrEne, avrHap, avrFoc)
+                                                                               
     except IOError:
-        print "No such file or directory: %s" %filename
+        print "No such file or directory: {}".format(filename)
         sys.exit()
     except KeyError:
-        print "Worksheet '%s' does not exist." %worksheet
+        print "Worksheet '{}' does not exist.".format(worksheet)
+        sys.exit()
 
-def createSpreadsheet(filename):
+def createSpreadsheet():
     try:
         wb = openpyxl.Workbook()
         sheet = wb.active
@@ -48,9 +49,9 @@ def createSpreadsheet(filename):
         sheet["C1"] = "Energy"
         sheet["D1"] = "Happiness"
         sheet["E1"] = "Focus"
-        sheet["G1"] = "Position"
+        sheet["G1"] = "Spreadsheet_Line_To_Write"
         sheet["G2"] = 2
-        wb.save(filename)
+        wb.save("SOBm-data.xlsx")
     except:
         print "Something went wrong!\nTry again!"
     
@@ -64,7 +65,7 @@ def voiceMessage(text): #voice message
     engine.say(text)
     engine.runAndWait()
 
-def input(): #take input of happiness, focus and energy
+def user_input(): #take user_input of happiness, focus and energy
     while True:
         
         try:
@@ -89,27 +90,28 @@ def input(): #take input of happiness, focus and energy
             return [happiness, energy, focus] #return values as a list
             break
 
-def writeToSpreadsheet(sheet, happiness, energy, focus, position):
+def writeToSpreadsheet(sheet, happiness, energy, focus, spreadsheet_line_to_write):
     try:
-        pos = "A" + str(position) #get position eg. A2, from column name + position (line number)
-        sheet[pos] = time.strftime("%d.%m.%Y") #write date (dd.mm.yyyy) to sheet on position eg. A2
+        print sheet
+        pos = "A" + str(spreadsheet_line_to_write) #get spreadsheet_line_to_write eg. A2, from column name + spreadsheet_line_to_write (line number)
+        sheet[pos] = time.strftime("%d.%m.%Y") #write date (dd.mm.yyyy) to sheet on spreadsheet_line_to_write eg. A2
 
-        pos = "B" + str(position) #get position eg. B2, from column name + position (line number)
-        sheet[pos] = time.strftime("%H:%M:%S") #write time (hh:mm:ss) to sheet on position eg. B2
+        pos = "B" + str(spreadsheet_line_to_write) #get spreadsheet_line_to_write eg. B2, from column name + spreadsheet_line_to_write (line number)
+        sheet[pos] = time.strftime("%H:%M:%S") #write time (hh:mm:ss) to sheet on spreadsheet_line_to_write eg. B2
 
-        pos = "C" + str(position) #get position eg. C2, from column name + position (line number)
-        sheet[pos] = energy #write energy value to sheet on position eg. C2
+        pos = "C" + str(spreadsheet_line_to_write) #get spreadsheet_line_to_write eg. C2, from column name + spreadsheet_line_to_write (line number)
+        sheet[pos] = energy #write energy value to sheet on spreadsheet_line_to_write eg. C2
 
-        pos = "D" + str(position) #get position eg. D2, from column name + position (line number)
-        sheet[pos] = happiness #write happiness value to sheet on position eg. D2
+        pos = "D" + str(spreadsheet_line_to_write) #get spreadsheet_line_to_write eg. D2, from column name + spreadsheet_line_to_write (line number)
+        sheet[pos] = happiness #write happiness value to sheet on spreadsheet_line_to_write eg. D2
 
-        pos = "E" + str(position) #get position eg. E2, from column name + position (line number)
-        sheet[pos] = focus #write focus value to sheet on position eg. E2
+        pos = "E" + str(spreadsheet_line_to_write) #get spreadsheet_line_to_write eg. E2, from column name + spreadsheet_line_to_write (line number)
+        sheet[pos] = focus #write focus value to sheet on spreadsheet_line_to_write eg. E2
 
-        position += 1 #increase value of position (sheet line) by one
-        sheet['G2'] = position #write position value to the shell on position G2
+        spreadsheet_line_to_write += 1 #increase value of spreadsheet_line_to_write (sheet line) by one
+        sheet['G2'] = spreadsheet_line_to_write #write spreadsheet_line_to_write value to the shell on spreadsheet_line_to_write G2
 
-        print "Data seccessfuly entered into a sheet!"
+        print "Data successfuly entered into a sheet!"
         
     except:
         print "Something went wrong when entering data into a sheet!\nTry again!"
@@ -118,43 +120,47 @@ def writeToSpreadsheet(sheet, happiness, energy, focus, position):
 
 def saveSpreadsheet(wb):
     try:
-        wb.save("/home/bostjan/Documents/sheetTest.xlsx") #save spreadsheet to /home/bostjan/...
+        wb.save("SOBm-data.xlsx") #save spreadsheet to /home/bostjan/...
         print "File saved successfully!"
 
     except:
-        print "Something went wrong while saving a file! File not saved! '/n' Try again!"
+        print "Something went wrong while saving a file! File not saved!/nTry again!"
         
 def wait(): #defines time between inputs
     print time.strftime("%H:%M:%S")
     print "Waiting 10 seconds."
     time.sleep(10)
 
-def main():
+def arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-c", "--create-spreadsheet",
+    parser.add_argument("-c", "--create-spreadsheet", action="store_true",
                         help="Create new spreadsheet in current folder.")
-    parser.add_argument('-a', '--show-worksheet-averages', nargs='+', type=str,
-                        help="ged")
+    parser.add_argument('-a', '--show-worksheet-averages', type=str,
+                        help="Show averages for selected spreadsheet.")
     args = parser.parse_args()
 
-    if args.create_spreadsheet is not None:
-        createSpreadsheet(args.create_spreadsheet)
+    if args.create_spreadsheet == True:
+        createSpreadsheet()
         sys.exit()
 
     if args.show_worksheet_averages is not None:
         arg = args.show_worksheet_averages
-        getWorksheetAverages(arg[0], arg[1])
+        getWorksheetAverages(arg)
         sys.exit()
-    
+
+def main():
+
+    arguments()
     while True:
-        wb = openpyxl.load_workbook("/home/bostjan/Documents/sheet.xlsx") #open spreadsheet from /home/bostjan/...
-        sheet = wb.get_sheet_by_name("May") #select sheet named 'May'
-        position = sheet['G2'].value #from sheet position G2 get value of position (line number)
+        wb = openpyxl.load_workbook("SOBm-data.xlsx")
+        sheet = wb.get_sheet_by_name("May")
+        spreadsheet_line_to_write = sheet['G2'].value
         voiceMessage("It's time to enter your feelings.")
-        popupMessage("It's time to monitor your feelings") #show popup message
-        values = input() #input part
-        writeToSpreadsheet(sheet, values[0], values[1], values[2], position) #write values to sheet
-        saveSpreadsheet(wb) #save spreadsheet
+        popupMessage("It's time to monitor your feelings")
+        values = user_input()
+        print values
+        writeToSpreadsheet(sheet, values[0], values[1], values[2], spreadsheet_line_to_write)
+        saveSpreadsheet(wb)
         wait()
         
 if __name__=="__main__":

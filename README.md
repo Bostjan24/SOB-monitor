@@ -8,3 +8,4 @@ It collects levels of happiness, energy and focus on hourly level. Data is saved
 
 <b>Options</b>
   1. -a, --show-month-averages [sheet_name] => Shows averages for selected sheet.
+  2. -c, --create-spreadsheet => Creates spreadsheet named SOBm-data.xlsx in current folder

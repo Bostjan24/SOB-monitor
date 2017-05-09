@@ -17,8 +17,8 @@ When you run the program for the first time, you need to run it with create spre
 If you want to save the data to the database, you need to create database yourself. Database name must be 'sob_monitor', script to create table can be found in script.sql document.
 
 <b>Options</b><br>
-  `-a, --show-averages=> Shows averages for selected sheet.<br>
-  -c, --create-spreadsheet => Creates spreadsheet named SOBm-data.xlsx in current folder<br>
-  --sheet-name => Name of the sheet in wich data will be saved. Default: 'data'<br>
-  --database-mode => Use database (you need to create it) instead of spreadsheet.`
-  
+  `-a, --show-averages=> Shows averages for selected sheet.`<br>
+  `-c, --create-spreadsheet => Creates spreadsheet named SOBm-data.xlsx in current folder`<br>
+  `--sheet-name => Name of the sheet in wich data will be saved. Default: 'data'`<br>
+  `--database-mode => Use database (you need to create it) instead of spreadsheet.`
+  

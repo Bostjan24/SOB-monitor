@@ -1,8 +1,5 @@
 drop table IF EXISTS data;
 
-
-
-
 Create table data (
 	entry_id Int NOT NULL AUTO_INCREMENT,
 	date Date NOT NULL,

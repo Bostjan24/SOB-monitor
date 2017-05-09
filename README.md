@@ -10,11 +10,11 @@ You can choose whether you would save data to a spreadsheet or to the database.
 
 <b>Saving data to spreadsheet</b>
 
-When you run the program for the first time, you need to run it with create spreadsheet option (see below), to create an empty spreadsheet. Spreadsheet will be created in the same folder where program is located.
+When you run the program for the first time, you need to run it with create spreadsheet option (see below), to create an empty spreadsheet, wich will be created in the same folder where program is located.
 
 <b>Saving data to the database</b>
 
-If you want to save the data to the database, you need to create database yourself. Database name must be 'sob_monitor', script to create table can be found in script.sql document.
+If you want to save the data to the database, you need to create database yourself. Database name must be 'sob_monitor', script to create the table can be found in the script.sql document.
 
 <b>Options</b><br>
   `-a, --show-averages=> Shows averages for selected sheet.`<br>

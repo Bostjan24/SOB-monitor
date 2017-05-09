@@ -125,7 +125,7 @@ def spreadsheetMode(values, sheetName):
 def getAveragesFromDatabase():
     try:
            #start of part for getting data from database
-           con = mysql.connector.connect(user='sob', password='gHfudqKetN2mCYOeIgOM', host='192.168.0.7',
+           con = mysql.connector.connect(user='', password='', host='',
                                      database='sob_monitor')
            cursor = con.cursor()
            get_number_of_rows = "SELECT COUNT(*) FROM sob_data;"
@@ -163,7 +163,7 @@ def getAveragesFromDatabase():
         sys.exit()
 
 def writeToDatabase(date, hour, happiness, energy, focus):
-    con = mysql.connector.connect(user='sob', password='gHfudqKetN2mCYOeIgOM', host='192.168.0.7', database='sob_monitor')
+    con = mysql.connector.connect(user='', password='', host='', database='sob_monitor')
     cursor = con.cursor()
     data = "INSERT INTO sob_data VALUES({}, {}, {}, {}, {}, {});".format(0, date, hour, happiness, energy, focus)
     cursor.execute(data)

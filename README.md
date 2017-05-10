@@ -14,7 +14,7 @@ When you run the program for the first time, you need to run it with create spre
 
 <b>Saving data to the database</b>
 
-If you want to save the data to the database, you need to create database yourself. Database name must be 'sob_monitor', script to create the table can be found in the script.sql document. <b>I run the database on MariaDB server. I haven't tried any other servers, so I suggest that you use MariaDB as well. If not, there is a chance that the program won't work.</b>
+If you want to save the data to the database, you need to create database yourself. Database name must be 'sob_monitor', script to create the table can be found in the script.sql document. <b>I run the database on MariaDB server. I haven't tried any other servers, so I suggest that you use MariaDB as well. If not, there is a chance that the program won't work.</b><br><br><b>You also need to tweak the code a little. Password for the database is currently stored in plain text, but I'm working on improving that.</b>
 
 <b>Options</b><br>
   `-a, --show-averages=> Shows averages for selected sheet.`<br>

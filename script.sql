@@ -1,9 +1,9 @@
 drop table IF EXISTS data;
 
-Create table data (
+Create table sob_data (
 	entry_id Int NOT NULL AUTO_INCREMENT,
-	date Date NOT NULL,
-	time Time NOT NULL,
+	day Date NOT NULL,
+	hour Time NOT NULL,
 	happines Int NOT NULL,
 	energy Int NOT NULL,
 	focus Int NOT NULL,

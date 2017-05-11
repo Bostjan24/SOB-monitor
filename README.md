@@ -12,7 +12,7 @@ You can choose whether it would save data to a spreadsheet or to the database.
 
 <b>You need to have Python 2.7 with all required libraries installed.</b><br>Open the terminal from the folder where program is located an run <b>python SOB-monitor.py</b>.
 
-<b>Saving data to spreadsheet</b>
+<b>Saving data to spreadsheet (default)</b>
 
 When you run the program for the first time, you need to run it with create spreadsheet option (see below), to create an empty spreadsheet, wich will be created in the same folder where program is located.
 

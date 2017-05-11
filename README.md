@@ -8,6 +8,10 @@ It collects levels of happiness, energy and focus on hourly level.
 
 You can choose whether you would save data to a spreadsheet or to the database.
 
+<b>How to use the program</b>
+
+<b>You need to have Python 2.7 with all required libraries installed.</b><br>Open the terminal from the folder where program is located an run <b>python SOB-monitor.py<b>.
+
 <b>Saving data to spreadsheet</b>
 
 When you run the program for the first time, you need to run it with create spreadsheet option (see below), to create an empty spreadsheet, wich will be created in the same folder where program is located.

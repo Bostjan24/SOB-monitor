@@ -6,7 +6,7 @@ This is a little program I've written for myself. Fell free to use it.
 
 It collects levels of happiness, energy and focus on hourly level.
 
-You can choose whether you would save data to a spreadsheet or to the database.
+You can choose whether it would save data to a spreadsheet or to the database.
 
 <b>How to use the program</b>
 

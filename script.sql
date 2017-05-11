@@ -10,3 +10,14 @@ Create table sob_data (
 	UNIQUE (entry_id),
 	Index AI_entry_id (entry_id),
  Primary Key (entry_id)) ENGINE = MyISAM;
+ 
+drop table IF EXISTS password;
+
+Create table password (
+	entry_id Int NOT NULL AUTO_INCREMENT,
+	hash Varchar(1000) NOT NULL,
+	salt Varchar(1000) NOT NULL,
+	UNIQUE (entry_id),
+	UNIQUE (hash),
+	Index AI_entry_id (entry_id),
+ Primary Key (entry_id)) ENGINE = MyISAM;

@@ -333,8 +333,8 @@ def user_input(): #take user_input of happiness, focus and energy
         
 def wait(): #defines time between inputs
     #print time.strftime("%H:%M:%S")
-    print "Waiting 15 seconds."
-    time.sleep(15)
+    print "Waiting 1 hour."
+    time.sleep(3600)
 
 def arguments():
     parser = argparse.ArgumentParser()

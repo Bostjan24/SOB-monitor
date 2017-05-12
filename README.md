@@ -18,11 +18,12 @@ When you run the program for the first time, you need to run it with create spre
 
 <b>Saving data to the database</b>
 
-If you want to save the data to the database, you need to create database yourself and do some tweaks in the main program. Script to create the tables is located in the script.sql document. I run the database on MariaDB server. I haven't tried any other servers, so I suggest that you use MariaDB as well. If not, there is a chance that the program won't work.
+I run the database on MariaDB server. I haven't tried any other servers, so I suggest that you use MariaDB as well. If not, there is a chance that the program won't work. You need to install server yourself. To create database necessarry for the program, run the program with create-database option (see below).
 
 <b>Options</b><br>
   `-a, --show-averages=> Shows averages for selected sheet.`<br>
   `-c, --create-spreadsheet => Creates spreadsheet named SOBm-data.xlsx in current folder`<br>
   `--sheet-name [sheet_name] => Name of the sheet in wich data will be saved. Default: 'data'`<br>
-  `--database-mode => Use database (you need to create it) instead of spreadsheet.`
+  `--database-mode => Use database (you need to create it) instead of spreadsheet.`<br>
+  `--create-database => Create database for storing the data.`
   

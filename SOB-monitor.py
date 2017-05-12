@@ -20,8 +20,61 @@ class Bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
+def createDatabase():
+    try:
+        print Bcolors.OKBLUE + "You are in database creation mode." + Bcolors.ENDC
+        host = raw_input("Host: ")
+        user = raw_input("User (with full privileges): ")
+        passwd = getpass("Password for '{}': ".format(user))
+        con = mysql.connector.connect(user=user, host=host, password=passwd)
+        cursor = con.cursor()
+        cursor.execute("show databases;")
+        data = cursor.fetchall()
+        for value in data:
+            if value[0] == "sob_monitor":
+                print "{}Database {} already exist!\nProgram exited!{}".format(Bcolors.WARNING, value[0], Bcolors.ENDC)
+                sys.exit()
+        cursor.execute("CREATE DATABASE sob_monitor;")
+        cursor.execute("USE sob_monitor;")
+        cursor.execute("Create table sob_data (entry_id Int NOT NULL AUTO_INCREMENT, day Date NOT NULL, hour Time NOT NULL, happines Int NOT NULL, energy Int NOT NULL, focus Int NOT NULL, UNIQUE (entry_id), Index AI_entry_id (entry_id), Primary Key (entry_id)) ENGINE = MyISAM;")
+        cursor.execute("Create table passwd (entry_id Int NOT NULL AUTO_INCREMENT, hash Varchar(150) NOT NULL, salt Varchar(150) NOT NULL, UNIQUE (entry_id), UNIQUE (hash), Index AI_entry_id (entry_id), Primary Key (entry_id)) ENGINE = MyISAM;")
+
+    except Exception, e:
+        print Bcolors.FAIL + repr(e) + Bcolors.ENDC
+        print Bcolors.WARNING + "Program exited!" + Bcolors.ENDC
+        sys.exit()
+        
+    try:
+        print "{}Creating user 'sob'...{}".format(Bcolors.OKBLUE, Bcolors.ENDC)
+        cursor.execute("drop user 'sob'@'{}'".format(host))
+        cursor.execute("flush privileges;")
+        passwd = getpass("Choose password for user 'sob': ")
+        cursor.execute("Create user 'sob'@'{}' identified by '{}'".format(host, passwd))
+        cursor.execute("GRANT insert, select on sob_monitor.* to 'sob'@'{}'".format(host))
+        print "{}User 'sob' successfully crated!{}".format(Bcolors.OKGREEN, Bcolors.ENDC)
+
+    except Exception, e:
+        print Bcolors.FAIL + repr(e) + Bcolors.ENDC
+        print Bcolors.WARNING + "Program exited!" + Bcolors.ENDC
+        sys.exit()
+
+    try:
+        print "{}Creating user 'sob_data' (without password)...!{}".format(Bcolors.OKBLUE, Bcolors.ENDC)
+        cursor.execute("drop user 'sob_data'@'{}'".format(host))
+        cursor.execute("flush privileges;")
+        cursor.execute("Create user 'sob_data'@'{}'".format(host))
+        cursor.execute("GRANT insert on sob_monitor.sob_data to 'sob_data'@'{}'".format(host))
+        cursor.execute("GRANT select on sob_monitor.passwd to 'sob_data'@'{}'".format(host))
+        print "{}User 'sob_data' successfully crated!{}".format(Bcolors.OKGREEN, Bcolors.ENDC)
+        sys.exit()
+
+    except Exception, e:
+        print Bcolors.FAIL + repr(e) + Bcolors.ENDC
+        print Bcolors.WARNING + "Program exited!" + Bcolors.ENDC
+        sys.exit()
+
 def getPassword():
-    con = mysql.connector.connect(user='sob_insert', host='192.168.0.7', port='3306',
+    con = mysql.connector.connect(user='sob_data', host='localhost', port='3306',
                                      database='sob_monitor')
     cursor = con.cursor()
     cursor.execute("SELECT hash, salt FROM passwd;")
@@ -34,7 +87,7 @@ def getPassword():
             salt = bcrypt.gensalt()
             combo_password = master + salt
             hashed_password = bcrypt.hashpw(combo_password, salt)
-            con = mysql.connector.connect(user='sob', password=master, host='192.168.0.7', database='sob_monitor')
+            con = mysql.connector.connect(user='sob', password=master, host='localhost', database='sob_monitor')
             cursor = con.cursor()
             cursor.execute("INSERT INTO passwd VALUES({}, '{}', '{}');".format(0, hashed_password, salt))
             print Bcolors.OKGREEN + "Password saved to the database." + Bcolors.ENDC
@@ -46,7 +99,7 @@ def getPassword():
             sys.exit()
     else:
         master = getpass("Enter password for user 'sob': ")
-        con = mysql.connector.connect(user='sob_insert', host='192.168.0.7', port='3306',
+        con = mysql.connector.connect(user='sob_data', host='localhost', port='3306',
                                          database='sob_monitor')
         cursor = con.cursor()
         print Bcolors.WARNING + "Authenticating..." + Bcolors.ENDC
@@ -179,7 +232,7 @@ def spreadsheetMode(values, sheetName):
 
 def getAveragesFromDatabase(master):
     try:
-        con = mysql.connector.connect(user='sob', password=master, host='192.168.0.7',
+        con = mysql.connector.connect(user='sob', password=master, host='localhost',
                                   database='sob_monitor')
         cursor = con.cursor()
         get_number_of_rows = "SELECT COUNT(*) FROM sob_data;"
@@ -217,7 +270,7 @@ def getAveragesFromDatabase(master):
         sys.exit()
 
 def writeToDatabase(date, hour, happiness, energy, focus):
-    con = mysql.connector.connect(user='sob_insert', password='', host='192.168.0.7', database='sob_monitor')
+    con = mysql.connector.connect(user='sob_data', password='', host='localhost', database='sob_monitor')
     cursor = con.cursor()
     data = "INSERT INTO sob_data VALUES({}, {}, {}, {}, {}, {});".format(0, date, hour, happiness, energy, focus)
     cursor.execute(data)
@@ -292,6 +345,7 @@ def arguments():
     parser.add_argument('--database-mode', action="store_true",
                         help="Use database (you need to create it) instead of spreadsheet.")
     parser.add_argument("--sheet-name", type=str, help="Name of the sheet in wich data will be saved. Default: 'data'")
+    parser.add_argument("--create-database", action="store_true", help="Crate database for storing data.")
     args = parser.parse_args()
 
     if args.database_mode == True:
@@ -319,6 +373,9 @@ def arguments():
         sheet_name = args.sheet_name
     else:
         sheet_name = "data"
+
+    if args.create_database == True:
+        createDatabase()
 
 def main():
     arguments()

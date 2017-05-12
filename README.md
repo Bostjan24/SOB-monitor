@@ -18,7 +18,7 @@ When you run the program for the first time, you need to run it with create spre
 
 <b>Saving data to the database</b>
 
-I run the database on MariaDB server. I haven't tried any other servers, so I suggest that you use MariaDB as well. If not, there is a chance that the program won't work. You need to install server yourself. To create database necessarry for the program, run the program with create-database option (see below).
+I run the database on MariaDB server. I haven't tried any other servers yet, so I suggest that you use MariaDB as well. If not, there is a chance that the program won't work. You need to install server yourself. To create database necessarry for the program, run the program with create-database option (see below).
 
 <b>Options</b><br>
   `-a, --show-averages=> Shows averages for selected sheet.`<br>

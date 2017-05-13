@@ -26,7 +26,7 @@ def getAveragesInRange():
         end = raw_input("Enter end date (yyyy-mm-dd): ")
         host = raw_input("Host: ")
         passwd = getpass("Password for user 'sob': ")
-        con = mysql.connector.connect(user="sob", host=host, password=passwd, database="sob_data")
+        con = mysql.connector.connect(user="sob", host=host, password=passwd, database="sob_monitor")
         cursor = con.cursor()
         number_of_rows = "SELECT COUNT(*) FROM sob_data WHERE date(date_date) between '{}' and '{}';".format(start, end)
         get_happiness = "SELECT happines FROM sob_data WHERE date(date_date) between '{}' and '{}';".format(start, end)
@@ -149,7 +149,7 @@ def createDatabase():
 
 def getPassword():
     con = mysql.connector.connect(user='sob_data', host='localhost', port='3306',
-                                     database='sob_data')
+                                     database='sob_monitor')
     cursor = con.cursor()
     cursor.execute("SELECT hash, salt FROM passwd;")
     data = cursor.fetchall()
@@ -161,7 +161,7 @@ def getPassword():
             salt = bcrypt.gensalt()
             combo_password = master + salt
             hashed_password = bcrypt.hashpw(combo_password, salt)
-            con = mysql.connector.connect(user='sob', password=master, host='localhost', database='sob_data')
+            con = mysql.connector.connect(user='sob', password=master, host='localhost', database='sob_monitor')
             cursor = con.cursor()
             cursor.execute("INSERT INTO passwd VALUES({}, '{}', '{}');".format(0, hashed_password, salt))
             print Bcolors.OKGREEN + "Password saved to the database." + Bcolors.ENDC
@@ -174,7 +174,7 @@ def getPassword():
     else:
         master = getpass("Enter password for user 'sob': ")
         con = mysql.connector.connect(user='sob_data', host='localhost', port='3306',
-                                         database='sob_data')
+                                         database='sob_monitor')
         cursor = con.cursor()
         print Bcolors.WARNING + "Authenticating..." + Bcolors.ENDC
         cursor.execute("SELECT hash, salt FROM passwd;")
@@ -307,7 +307,7 @@ def spreadsheetMode(values, sheetName):
 def getAveragesFromDatabase(master):
     try:
         con = mysql.connector.connect(user='sob', password=master, host='localhost',
-                                  database='sob_data')
+                                  database='sob_monitor')
         cursor = con.cursor()
         get_number_of_rows = "SELECT COUNT(*) FROM sob_data;"
         get_happiness = "SELECT happiness FROM sob_data;"
@@ -343,7 +343,7 @@ def getAveragesFromDatabase(master):
         sys.exit()
 
 def writeToDatabase(date, hour, happiness, energy, focus):
-    con = mysql.connector.connect(user='sob_data', password='', host='localhost', database='sob_data')
+    con = mysql.connector.connect(user='sob_data', password='', host='localhost', database='sob_monitor')
     cursor = con.cursor()
     data = "INSERT INTO sob_data VALUES({}, {}, {}, {}, {}, {});".format(0, date, hour, happiness, energy, focus)
     cursor.execute(data)

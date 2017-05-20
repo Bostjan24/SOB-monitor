@@ -21,10 +21,6 @@ class Bcolors:
     ENDC = '\033[0m'
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
-
-def restartProgram():
-    python = sys.executable
-    os.execl(python, python, * sys.argv)
     
 def popupMessage(message): #show popup message
     root = tk.Tk()
@@ -82,23 +78,23 @@ def arguments():
     parser.add_argument("--wait", type=int, help="Set time (in seconds) between entries.")
     args = parser.parse_args()
 
-    if args.database_mode == True:
-        global mode
-        mode = "database"
-    else:
-        mode = "spreadsheet"
+    # if args.database_mode == True:
+    #     global mode
+    #     mode = "database"
+    # else:
+    #     mode = "spreadsheet"
 
-    if args.create_spreadsheet == True:
+    if args.create_spreadsheet == True and args.database_mode == False:
         spreadsheet_mode.createSpreadsheet()
         sys.exit()
 
-    if args.show_averages == True and mode == "database" and args.choose_range != True:
+    if args.show_averages == True  and args.database_mode == True and args.choose_range != True:
         arg = args.show_averages
         master = getpass("Password for 'scooter':" )
         db_mode.getAverages(master)
         sys.exit()
 
-    elif args.show_averages == True and mode == "spreadsheet" and args.choose_range != True:
+    elif args.show_averages == True and args.database_mode == False and args.choose_range != True:
         sheet = raw_input("Enter the name of sheet: ")
         spreadsheet_mode.getAverages(sheet)
         sys.exit()
@@ -109,7 +105,7 @@ def arguments():
     else:
         sheet_name = "data"
 
-    if args.create_database == True:
+    if args.create_database == True and args.database_mode == True:
         db_mode.createDatabase()
         sys.exit()
 
@@ -123,17 +119,24 @@ def arguments():
     else:
         wait_time = 3600
 
+    if args.database_mode == False:
+        values = user_input()
+        spreadsheet_mode.main(values, sheet_name)
+    elif args.database_mode == True:
+        values = user_input()
+        db_mode.main(values)
+
 def main():
-    arguments()
     
     while True:
         voiceMessage("It's time to enter your feelings.")
         popupMessage("It's time to enter your feelings!")
-        values = user_input()
-        if mode == "spreadsheet":
-            spreadsheet_mode.main(values, sheet_name)
-        else:
-            db_mode.main(values)
+        arguments()
+        # values = user_input()
+        # if mode == "spreadsheet":
+        #     spreadsheet_mode.main(values, sheet_name)
+        # else:
+        #     db_mode.main(values)
         wait(wait_time)
         
 if __name__=="__main__":

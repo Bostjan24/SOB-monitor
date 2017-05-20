@@ -71,7 +71,7 @@ def write(sheet, happiness, energy, focus, spreadsheet_line_to_write):
         spreadsheet_line_to_write += 1 #increase value of spreadsheet_line_to_write (sheet line) by one
         sheet['G2'] = spreadsheet_line_to_write #write spreadsheet_line_to_write value to the shell on spreadsheet_line_to_write G2
 
-        print Bcolors.OKGREEN + "Data successfuly entered into a sheet!" + Bcolors.ENDC
+        print Bcolors.OKGREEN + "Data was successfuly entered into a sheet at {}!".format(time.strftime("%H:%M:%S")) + Bcolors.ENDC
         
     except Exception, e:
         print Bcolors.WARNING + "Failed enetering data to the spreadsheet!" + Bcolors.ENDC

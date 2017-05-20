@@ -8,6 +8,8 @@ import sys
 import os
 import mysql.connector
 import bcrypt
+import db_mode
+import spreadsheet_mode
 from getpass import getpass
 
 class Bcolors:
@@ -19,349 +21,6 @@ class Bcolors:
     ENDC = '\033[0m'
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
-
-def getAveragesInRange():
-    if mode == "database":
-        start = raw_input("Enter start date (yyyy-mm-dd): ")
-        end = raw_input("Enter end date (yyyy-mm-dd): ")
-        host = raw_input("Host: ")
-        passwd = getpass("Password for user 'sob': ")
-        con = mysql.connector.connect(user="sob", host=host, password=passwd, database="sob_monitor")
-        cursor = con.cursor()
-        number_of_rows = "SELECT COUNT(*) FROM sob_data WHERE date(date_date) between '{}' and '{}';".format(start, end)
-        get_happiness = "SELECT happines FROM sob_data WHERE date(date_date) between '{}' and '{}';".format(start, end)
-        get_focus = "SELECT focus FROM sob_data WHERE date(date_date) between '{}' and '{}';".format(start, end)
-        get_energy = "SELECT energy FROM sob_data WHERE date(date_date) between '{}' and '{}';".format(start, end)
-        
-        cursor.execute(number_of_rows)
-        number_of_rows = cursor.fetchall()
-        number_of_rows = int(number_of_rows[0][0])
-
-        cursor.execute(get_happiness)
-        happiness = 0
-        for value in cursor:
-            happiness += value[0]
-        average_happiness = happiness / number_of_rows
-
-        cursor.execute(get_energy)
-        energy = 0
-        for value in cursor:
-            energy += value[0]
-        average_energy = energy / number_of_rows
-
-        cursor.execute(get_focus)
-        focus = 0
-        for value in cursor:
-            focus += value[0]
-        average_focus = focus / number_of_rows
-        con.close()
-        print "Average happiness: {:.2f}\nAverage energy: {:.2f}\nAverage focus: {:.2f}".format(average_energy, average_happiness, average_focus)        
-    else:
-        try:
-            start = raw_input("Enter start date (dd.mm.yyyy): ")
-            end = raw_input("Enter end date (dd.mm.yyyy): ")
-            worksheet = raw_input("Enter name of the sheet: ")
-            #start of part for getting data from sheet
-            wb = openpyxl.load_workbook("SOBm-data.xlsx")
-            sheet = wb.get_sheet_by_name(worksheet)
-            average_happiness = 0
-            average_energy = 0
-            average_focus = 0
-            for char in xrange(67, 70):
-                avr = 0.0
-                for row in xrange(2, sheet.max_row):
-                    if  sheet[str(chr(char)) + str(row)].value == None:
-                        break
-                    #print sheet[str(chr(char)) + str(row)].value
-                    if sheet['A' + str(row)].value >= start and sheet['A' + str(row)].value <= end:
-                        avr += sheet[str(chr(char)) + str(row)].value
-                if char == 67:
-                    average_energy = avr / (sheet.max_row - 1)
-                elif char == 68: 
-                    average_happiness = avr / (sheet.max_row -1)
-                else:
-                    average_focus = avr / (sheet.max_row -1)
-            print "Average happiness: {:.2f}\nAverage energy: {:.2f}\nAverage focus: {:.2f}".format(average_energy, average_happiness, average_focus)
-
-        except IOError:
-            print Bcolors.WARNING + "No such file or directory: {}\nProgram exited!".format(filename) + Bcolors.ENDC
-            sys.exit()
-        except KeyError:
-            print Bcolors.WARNING + "Worksheet '{}' does not exist.\nProgram exited!".format(worksheet) + Bcolors.ENDC
-            sys.exit()
-        except Exception, e:
-            print Bcolors.FAIL + repr(e) + Bcolors.ENDC
-            print Bcolors.WARNING + "Program exited!" + Bcolors.ENDC
-            sys.exit()    
-
-def createDatabase():
-    try:
-        print Bcolors.OKBLUE + "You are in database creation mode." + Bcolors.ENDC
-        host = raw_input("Host: ")
-        user = raw_input("User (with full privileges): ")
-        passwd = getpass("Password for '{}': ".format(user))
-        con = mysql.connector.connect(user=user, host=host, password=passwd)
-        cursor = con.cursor()
-        cursor.execute("show databases;")
-        data = cursor.fetchall()
-        for value in data:
-            if value[0] == "sob_monitor":
-                print "{}Database {} already exist!\nProgram exited!{}".format(Bcolors.WARNING, value[0], Bcolors.ENDC)
-                sys.exit()
-        cursor.execute("CREATE DATABASE sob_monitor;")
-        cursor.execute("USE sob_monitor;")
-        cursor.execute("Create table sob_data (entry_id Int NOT NULL AUTO_INCREMENT, date_date Date NOT NULL, date_time Time NOT NULL, happiness Int NOT NULL, energy Int NOT NULL, focus Int NOT NULL, UNIQUE (entry_id), Index AI_entry_id (entry_id), Primary Key (entry_id)) ENGINE = MyISAM;")
-        cursor.execute("Create table passwd (entry_id Int NOT NULL AUTO_INCREMENT, hash Varchar(150) NOT NULL, salt Varchar(150) NOT NULL, UNIQUE (entry_id), UNIQUE (hash), Index AI_entry_id (entry_id), Primary Key (entry_id)) ENGINE = MyISAM;")
-
-    except Exception, e:
-        print Bcolors.FAIL + repr(e) + Bcolors.ENDC
-        print Bcolors.WARNING + "Program exited!" + Bcolors.ENDC
-        sys.exit()
-        
-    try:
-        print "{}Creating user 'sob'...{}".format(Bcolors.OKBLUE, Bcolors.ENDC)
-        cursor.execute("drop user 'sob'@'{}'".format(host))
-        cursor.execute("flush privileges;")
-        passwd = getpass("Choose password for user 'sob': ")
-        cursor.execute("Create user 'sob'@'{}' identified by '{}'".format(host, passwd))
-        cursor.execute("GRANT insert, select on sob_monitor.* to 'sob'@'{}'".format(host))
-        print "{}User 'sob' successfully crated!{}".format(Bcolors.OKGREEN, Bcolors.ENDC)
-
-    except Exception, e:
-        print Bcolors.FAIL + repr(e) + Bcolors.ENDC
-        print Bcolors.WARNING + "Program exited!" + Bcolors.ENDC
-        sys.exit()
-
-    try:
-        print "{}Creating user 'sob_data' (without password)...!{}".format(Bcolors.OKBLUE, Bcolors.ENDC)
-        cursor.execute("drop user 'sob_data'@'{}'".format(host))
-        cursor.execute("flush privileges;")
-        cursor.execute("Create user 'sob_data'@'{}'".format(host))
-        cursor.execute("GRANT insert on sob_monitor.sob_data to 'sob_data'@'{}'".format(host))
-        cursor.execute("GRANT select on sob_monitor.passwd to 'sob_data'@'{}'".format(host))
-        print "{}User 'sob_data' successfully crated!{}".format(Bcolors.OKGREEN, Bcolors.ENDC)
-        sys.exit()
-
-    except Exception, e:
-        print Bcolors.FAIL + repr(e) + Bcolors.ENDC
-        print Bcolors.WARNING + "Program exited!" + Bcolors.ENDC
-        sys.exit()
-
-def getPassword():
-    con = mysql.connector.connect(user='sob_data', host='localhost', port='3306',
-                                     database='sob_monitor')
-    cursor = con.cursor()
-    cursor.execute("SELECT hash, salt FROM passwd;")
-    data = cursor.fetchall()
-    cursor.close()
-    con.close()
-    if data == []:
-        try:
-            master = getpass("Enter password for user 'sob': ")
-            salt = bcrypt.gensalt()
-            combo_password = master + salt
-            hashed_password = bcrypt.hashpw(combo_password, salt)
-            con = mysql.connector.connect(user='sob', password=master, host='localhost', database='sob_monitor')
-            cursor = con.cursor()
-            cursor.execute("INSERT INTO passwd VALUES({}, '{}', '{}');".format(0, hashed_password, salt))
-            print Bcolors.OKGREEN + "Password saved to the database." + Bcolors.ENDC
-            con.close()
-            getAveragesFromDatabase(master)
-            
-        except Exception, e:
-            print Bcolors.WARNING + "Wrong password!\nAccess denied!\nPassword was not saved to the database!\nProgam exited!" + Bcolors.ENDC
-            sys.exit()
-    else:
-        master = getpass("Enter password for user 'sob': ")
-        con = mysql.connector.connect(user='sob_data', host='localhost', port='3306',
-                                         database='sob_monitor')
-        cursor = con.cursor()
-        print Bcolors.WARNING + "Authenticating..." + Bcolors.ENDC
-        cursor.execute("SELECT hash, salt FROM passwd;")
-        data = cursor.fetchall()
-        cursor.close()
-        con.close()
-        combo_passwd = master + data[0][1]
-        hashed = bcrypt.hashpw(combo_passwd.encode('utf-8'), (str(data[0][1])).encode('utf-8'))
-        
-        if data[0][0] == hashed:
-            print Bcolors.OKGREEN + "Password correct!\nAccess granted!" + Bcolors.ENDC
-            getAveragesFromDatabase(master)
-            
-        else:
-            print Bcolors.WARNING + "Wrong password!\nAccess denied!" + Bcolors.ENDC
-
-def writeToSpreadsheet(sheet, happiness, energy, focus, spreadsheet_line_to_write):
-    try:
-        position = "A" + str(spreadsheet_line_to_write) #get spreadsheet_line_to_write eg. A2, from column name + spreadsheet_line_to_write (line number)
-        sheet[position] = time.strftime("%d.%m.%Y") #write date (dd.mm.yyyy) to sheet on spreadsheet_line_to_write eg. A2
-
-        position = "B" + str(spreadsheet_line_to_write) #get spreadsheet_line_to_write eg. B2, from column name + spreadsheet_line_to_write (line number)
-        sheet[position] = time.strftime("%H:%M:%S") #write time (hh:mm:ss) to sheet on spreadsheet_line_to_write eg. B2
-
-        position = "C" + str(spreadsheet_line_to_write) #get spreadsheet_line_to_write eg. C2, from column name + spreadsheet_line_to_write (line number)
-        sheet[position] = energy #write energy value to sheet on spreadsheet_line_to_write eg. C2
-
-        position = "D" + str(spreadsheet_line_to_write) #get spreadsheet_line_to_write eg. D2, from column name + spreadsheet_line_to_write (line number)
-        sheet[position] = happiness #write happiness value to sheet on spreadsheet_line_to_write eg. D2
-
-        position = "E" + str(spreadsheet_line_to_write) #get spreadsheet_line_to_write eg. E2, from column name + spreadsheet_line_to_write (line number)
-        sheet[position] = focus #write focus value to sheet on spreadsheet_line_to_write eg. E2
-
-        spreadsheet_line_to_write += 1 #increase value of spreadsheet_line_to_write (sheet line) by one
-        sheet['G2'] = spreadsheet_line_to_write #write spreadsheet_line_to_write value to the shell on spreadsheet_line_to_write G2
-
-        print Bcolors.OKGREEN + "Data successfuly entered into a sheet!" + Bcolors.ENDC
-        
-    except Exception, e:
-        print Bcolors.WARNING + "Failed enetering data to the database!" + Bcolors.ENDC
-        print Bcolors.FAIL + repr(e) + Bcolors.ENDC
-        print Bcolors.WARNING + "Program exited!" + Bcolors.ENDC
-        sys.exit()
-
-def saveSpreadsheet(wb):
-    try:
-        wb.save("SOBm-data.xlsx") #save spreadsheet to /home/bostjan/...
-        print Bcolors.OKGREEN + "File saved successfully!" + Bcolors.ENDC
-
-    except Exception, e:
-        print Bcolors.WARNING + "Failed saving the file!" + Bcolors.ENDC
-        print Bcolors.FAIL + repr(e) + Bcolors.ENDC
-        print Bcolors.WARNING + "Program exited!" + Bcolors.ENDC
-        sys.exit()
-        
-def getAveragesFromSpreadsheet(worksheet):
- try:
-     #start of part for getting data from sheet
-     wb = openpyxl.load_workbook("SOBm-data.xlsx")
-     sheet = wb.get_sheet_by_name(worksheet)
-     average_happiness = 0
-     average_energy = 0
-     average_focus = 0
-     for char in xrange(67, 70):
-         avr = 0.0
-         for row in xrange(2, sheet.max_row):
-             if  sheet[str(chr(char)) + str(row)].value == None:
-                 break
-             #print sheet[str(chr(char)) + str(row)].value
-             avr += sheet[str(chr(char)) + str(row)].value
-         if char == 67:
-             average_energy = avr / (sheet.max_row - 1)
-         elif char == 68: 
-             average_happiness = avr / (sheet.max_row -1)
-         else:
-             average_focus = avr / (sheet.max_row -1)
-     print "Average happiness: {:.2f}\nAverage energy: {:.2f}\nAverage focus: {:.2f}".format(average_energy, average_happiness, average_focus)
-
- except IOError:
-     print Bcolors.WARNING + "No such file or directory: {}\nProgram exited!".format(filename) + Bcolors.ENDC
-     sys.exit()
- except KeyError:
-     print Bcolors.WARNING + "Worksheet '{}' does not exist.\nProgram exited!".format(worksheet) + Bcolors.ENDC
-     sys.exit()
- except Exception, e:
-     print Bcolors.FAIL + repr(e) + Bcolors.ENDC
-     print Bcolors.WARNING + "Program exited!" + Bcolors.ENDC
-     sys.exit()
-
-def createSpreadsheet():
-    try:
-        wb = openpyxl.Workbook()
-        sheet = wb.active
-        sheet.title = "data"
-        sheet["A1"] = "Date"
-        sheet["B1"] = "Time"
-        sheet["C1"] = "Energy"
-        sheet["D1"] = "Happiness"
-        sheet["E1"] = "Focus"
-        sheet["G1"] = "Spreadsheet_Line_To_Write"
-        sheet["G2"] = 2
-        wb.save("SOBm-data.xlsx")
-        print Bcolors.OKGREEN + "Spreadsheet successfully crated!" + Bcolors.ENDC
-        
-    except Exception, e:
-        print Bcolors.WARNING + "Failed crating a spreadsheet!" + Bcolors.ENDC
-        print Bcolors.FAIL + repr(e) + Bcolors.ENDC
-        print Bcolors.WARNING + "Program exited!" + Bcolors.ENDC
-        sys.exit()
-    
-def spreadsheetMode(values, sheetName):
-    try:
-        wb = openpyxl.load_workbook("SOBm-data.xlsx")
-        sheet = wb.get_sheet_by_name(sheetName)
-        spreadsheet_line_to_write = sheet['G2'].value
-        writeToSpreadsheet(sheet, values[0], values[1], values[2], spreadsheet_line_to_write)
-        saveSpreadsheet(wb)
-
-    except IOError:
-        print Bcolors.WARNING + "No such file or directory: {}\nProgram exited!".format("SOB-data.xslx") + Bcolors.ENDC
-        sys.exit()
-    except KeyError:
-        print Bcolors.WARNING + "Worksheet '{}' does not exist.\nProgram exited!".format(sheetName) + Bcolors.ENDC
-        sys.exit()
-    except Exception, e:
-        print Bcolors.FAIL + repr(e) + Bcolors.ENDC
-        print Bcolors.WARNING + "Program exited!" + Bcolors.ENDC
-        sys.exit()
-
-def getAveragesFromDatabase(master):
-    try:
-        con = mysql.connector.connect(user='sob', password=master, host='localhost',
-                                  database='sob_monitor')
-        cursor = con.cursor()
-        get_number_of_rows = "SELECT COUNT(*) FROM sob_data;"
-        get_happiness = "SELECT happiness FROM sob_data;"
-        get_energy = "SELECT energy FROM sob_data;"
-        get_focus = "SELECT focus FROM sob_data;"
-        cursor.execute(get_number_of_rows)
-        for value in cursor:
-            number_of_rows = value[0]
-
-        cursor.execute(get_happiness)
-        happiness = 0
-        for value in cursor:
-            happiness += value[0]
-        average_happiness = happiness / number_of_rows
-
-        cursor.execute(get_energy)
-        energy = 0
-        for value in cursor:
-            energy += value[0]
-        average_energy = energy / number_of_rows
-
-        cursor.execute(get_focus)
-        focus = 0
-        for value in cursor:
-            focus += value[0]
-        average_focus = focus / number_of_rows
-        con.close()
-        print "Average happiness: {:.2f}\nAverage energy: {:.2f}\nAverage focus: {:.2f}".format(average_energy, average_happiness, average_focus)
-
-    except Exception, e:
-        print Bcolors.FAIL + repr(e) + Bcolors.ENDC
-        print Bcolors.WARNING + "Program exited!" + Bcolors.ENDC
-        sys.exit()
-
-def writeToDatabase(date, hour, happiness, energy, focus):
-    con = mysql.connector.connect(user='sob_data', password='', host='localhost', database='sob_monitor')
-    cursor = con.cursor()
-    data = "INSERT INTO sob_data VALUES({}, {}, {}, {}, {}, {});".format(0, date, hour, happiness, energy, focus)
-    cursor.execute(data)
-    con.close()
-
-def databaseMode(values):
-    try:
-        hour = time.strftime("%H%M%S")
-        date = time.strftime("%Y%m%d")
-        #print values
-        writeToDatabase(date, hour, values[0], values[1], values[2])
-        print Bcolors.OKGREEN + "At " + time.strftime("%H:%M:%S,") +  " data was successfully written to the database!" + Bcolors.ENDC 
-
-    except Exception, e:
-        print Bcolors.WARNING + "Failed writing data to database!" + Bcolors.ENDC
-        print Bcolors.FAIL + repr(e) + Bcolors.ENDC
-        print Bcolors.WARNING + "Program exited!" + Bcolors.ENDC
-        sys.exit()
 
 def restartProgram():
     python = sys.executable
@@ -404,10 +63,10 @@ def user_input(): #take user_input of happiness, focus and energy
             print Bcolors.WARNING + "Program exited!" + Bcolors.ENDC
             sys.exit()
         
-def wait(): #defines time between inputs
+def wait(wait_time): #defines time between inputs
     #print time.strftime("%H:%M:%S")
-    print "Waiting 1 hour."
-    time.sleep(3600)
+    print "{} seconds till next entry.".format(wait_time)
+    time.sleep(wait_time)
 
 def arguments():
     parser = argparse.ArgumentParser()
@@ -420,6 +79,7 @@ def arguments():
     parser.add_argument("--sheet-name", type=str, help="Name of the sheet in wich data will be saved. Default: 'data'")
     parser.add_argument("--create-database", action="store_true", help="Crate database for storing data.")
     parser.add_argument("--choose-range", action="store_true", help="Choose range in wich averages will be calculated.")
+    parser.add_argument("--wait", type=int, help="Set time (in seconds) between entries.")
     args = parser.parse_args()
 
     if args.database_mode == True:
@@ -429,17 +89,18 @@ def arguments():
         mode = "spreadsheet"
 
     if args.create_spreadsheet == True:
-        createSpreadsheet()
+        spreadsheet_mode.createSpreadsheet()
         sys.exit()
 
     if args.show_averages == True and mode == "database" and args.choose_range != True:
         arg = args.show_averages
-        getPassword()
+        master = getpass("Password for 'scooter':" )
+        db_mode.getAverages(master)
         sys.exit()
 
     elif args.show_averages == True and mode == "spreadsheet" and args.choose_range != True:
         sheet = raw_input("Enter the name of sheet: ")
-        getAveragesFromSpreadsheet(sheet)
+        spreadsheet_mode.getAverages(sheet)
         sys.exit()
 
     if args.sheet_name is not None:
@@ -449,11 +110,18 @@ def arguments():
         sheet_name = "data"
 
     if args.create_database == True:
-        createDatabase()
+        db_mode.createDatabase()
+        sys.exit()
 
     if args.choose_range == True and args.show_averages == True:
-        getAveragesInRange()
+        spreadsheet_mode.getAveragesInRange()
         sys.exit()
+
+    if args.wait is not None:
+        global wait_time
+        wait_time = args.wait
+    else:
+        wait_time = 3600
 
 def main():
     arguments()
@@ -463,10 +131,10 @@ def main():
         popupMessage("It's time to enter your feelings!")
         values = user_input()
         if mode == "spreadsheet":
-            spreadsheetMode(values, sheet_name)
+            spreadsheet_mode.main(values, sheet_name)
         else:
-            databaseMode(values)
-        wait()
+            db_mode.main(values)
+        wait(wait_time)
         
 if __name__=="__main__":
     main()

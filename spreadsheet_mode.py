@@ -18,7 +18,6 @@ def getAveragesInRange():
         start = raw_input("Enter start date (dd.mm.yyyy): ")
         end = raw_input("Enter end date (dd.mm.yyyy): ")
         worksheet = raw_input("Enter name of the sheet: ")
-        #start of part for getting data from sheet
         wb = openpyxl.load_workbook("SOBm-data.xlsx")
         sheet = wb.get_sheet_by_name(worksheet)
         average_happiness = 0
@@ -29,7 +28,6 @@ def getAveragesInRange():
             for row in xrange(2, sheet.max_row):
                 if  sheet[str(chr(char)) + str(row)].value == None:
                     break
-                #print sheet[str(chr(char)) + str(row)].value
                 if sheet['A' + str(row)].value >= start and sheet['A' + str(row)].value <= end:
                     avr += sheet[str(chr(char)) + str(row)].value
             if char == 67:
@@ -38,7 +36,7 @@ def getAveragesInRange():
                 average_happiness = avr / (sheet.max_row -1)
             else:
                 average_focus = avr / (sheet.max_row -1)
-        print "Average happiness: {:.2f}\nAverage energy: {:.2f}\nAverage focus: {:.2f}".format(average_energy, average_happiness, average_focus)
+        return (average_happiness, average_energy, average_focus)
 
     except IOError:
         print Bcolors.WARNING + "No such file or directory: {}\nProgram exited!".format(filename) + Bcolors.ENDC
@@ -81,7 +79,7 @@ def write(sheet, happiness, energy, focus, spreadsheet_line_to_write):
 
 def saveSpreadsheet(wb):
     try:
-        wb.save("SOBm-data.xlsx") #save spreadsheet to /home/bostjan/...
+        wb.save("SOBm-data.xlsx")
         print Bcolors.OKGREEN + "File saved successfully!" + Bcolors.ENDC
 
     except Exception, e:
@@ -92,7 +90,6 @@ def saveSpreadsheet(wb):
         
 def getAverages(worksheet):
  try:
-     #start of part for getting data from sheet
      wb = openpyxl.load_workbook("SOBm-data.xlsx")
      sheet = wb.get_sheet_by_name(worksheet)
      average_happiness = 0
@@ -103,7 +100,6 @@ def getAverages(worksheet):
          for row in xrange(2, sheet.max_row):
              if  sheet[str(chr(char)) + str(row)].value == None:
                  break
-             #print sheet[str(chr(char)) + str(row)].value
              avr += sheet[str(chr(char)) + str(row)].value
          if char == 67:
              average_energy = avr / (sheet.max_row - 1)
@@ -111,7 +107,7 @@ def getAverages(worksheet):
              average_happiness = avr / (sheet.max_row -1)
          else:
              average_focus = avr / (sheet.max_row -1)
-     print "Average happiness: {:.2f}\nAverage energy: {:.2f}\nAverage focus: {:.2f}".format(average_energy, average_happiness, average_focus)
+     return (average_happiness, average_energy, average_focus)
 
  except IOError:
      print Bcolors.WARNING + "No such file or directory: {}\nProgram exited!".format(filename) + Bcolors.ENDC

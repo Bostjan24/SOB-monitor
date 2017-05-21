@@ -16,8 +16,7 @@ class Bcolors:
 
 def getAverages(master):
     try:
-        con = mysql.connector.connect(user='sob', password=master, host='localhost',
-                                  database='sob_monitor')
+        con = mysql.connector.connect(user='sob', password=master, host='localhost', database='sob_monitor')
         cursor = con.cursor()
         get_number_of_rows = "SELECT COUNT(*) FROM sob_data;"
         get_happiness = "SELECT happiness FROM sob_data;"
@@ -44,8 +43,9 @@ def getAverages(master):
         for value in cursor:
             focus += value[0]
         average_focus = focus / number_of_rows
+        cursor.close()
         con.close()
-        print "Average happiness: {:.2f}\nAverage energy: {:.2f}\nAverage focus: {:.2f}".format(average_energy, average_happiness, average_focus)
+        return (average_happiness, average_energy, average_focus)
 
     except Exception, e:
         print Bcolors.FAIL + repr(e) + Bcolors.ENDC
@@ -86,15 +86,10 @@ def getAveragesInRange():
         for value in cursor:
             focus += value[0]
         average_focus = focus / number_of_rows
+        cursor.close()
         con.close()
-        print "Average happiness: {:.2f}\nAverage energy: {:.2f}\nAverage focus: {:.2f}".format(average_energy, average_happiness, average_focus)
+        return (average_energy, average_happiness, average_focus)
 
-    except IOError:
-        print Bcolors.WARNING + "No such file or directory: {}\nProgram exited!".format(filename) + Bcolors.ENDC
-        sys.exit()
-    except KeyError:
-        print Bcolors.WARNING + "Worksheet '{}' does not exist.\nProgram exited!".format(worksheet) + Bcolors.ENDC
-        sys.exit()
     except Exception, e:
         print Bcolors.FAIL + repr(e) + Bcolors.ENDC
         print Bcolors.WARNING + "Program exited!" + Bcolors.ENDC
@@ -112,8 +107,14 @@ def createDatabase():
         data = cursor.fetchall()
         for value in data:
             if value[0] == "sob_monitor":
-                print "{}Database {} already exist!\nProgram exited!{}".format(Bcolors.WARNING, value[0], Bcolors.ENDC)
-                sys.exit()
+                print "{}Database {} already exist!{}".format(Bcolors.WARNING, value[0], Bcolors.ENDC)
+                choice = raw_input("Do you want to drop it? [Y/n]")
+                if choice == '' or choice.lower() == 'y':
+                    cursor.execute("DROP DATABASE sob_monitor;")
+                    print "{}Database 'sob_monitor' was dropped!{}".format(Bcolors.WARNING, Bcolors.ENDC)
+                else:
+                    print "{}Program exited!{}".format(Bcolors.WARNING, Bcolors.ENDC)
+                    sys.exit()
         cursor.execute("CREATE DATABASE sob_monitor;")
         cursor.execute("USE sob_monitor;")
         cursor.execute("Create table sob_data (entry_id Int NOT NULL AUTO_INCREMENT, date_date Date NOT NULL, date_time Time NOT NULL, happiness Int NOT NULL, energy Int NOT NULL, focus Int NOT NULL, UNIQUE (entry_id), Index AI_entry_id (entry_id), Primary Key (entry_id)) ENGINE = MyISAM;")
@@ -146,6 +147,8 @@ def createDatabase():
         cursor.execute("GRANT insert on sob_monitor.sob_data to 'sob_data'@'{}'".format(host))
         cursor.execute("GRANT select on sob_monitor.passwd to 'sob_data'@'{}'".format(host))
         print "{}User 'sob_data' successfully crated!{}".format(Bcolors.OKGREEN, Bcolors.ENDC)
+        cursor.close()
+        con.close()
 
     except Exception, e:
         print Bcolors.FAIL + repr(e) + Bcolors.ENDC
@@ -157,13 +160,13 @@ def write(date, hour, happiness, energy, focus):
     cursor = con.cursor()
     data = "INSERT INTO sob_data VALUES({}, {}, {}, {}, {}, {});".format(0, date, hour, happiness, energy, focus)
     cursor.execute(data)
+    cursor.close()
     con.close()
 
 def main(values):
     try:
         hour = time.strftime("%H%M%S")
         date = time.strftime("%Y%m%d")
-        #print values
         write(date, hour, values[0], values[1], values[2])
         print Bcolors.OKGREEN + "At " + time.strftime("%H:%M:%S,") +  " data was successfully written to the database!" + Bcolors.ENDC 
 

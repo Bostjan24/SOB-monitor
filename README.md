@@ -22,9 +22,9 @@ I run the database on MariaDB server. I haven't tried any other servers yet, so 
 
 <b>Options</b><br>
   `-a, --show-averages=> Shows averages for selected sheet.`<br>
-  `-c, --create-spreadsheet => Creates spreadsheet named SOBm-data.xlsx in current folder`<br>
+  `--create-spreadsheet => Creates spreadsheet named SOBm-data.xlsx in current folder`<br>
   `--sheet-name [sheet_name] => Name of the sheet in wich data will be saved. Default: 'data'`<br>
-  `--database-mode => Use database (you need to create it) instead of spreadsheet.`<br>
+  `--database-mode => Use database instead of spreadsheet.`<br>
   `--create-database => Create database for storing the data.`<br>
-  `--choose-range [date1 date2] => Get averages between specific dates.`
+  `--range => Get averages between specific dates.`
   

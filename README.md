@@ -27,4 +27,7 @@ I run the database on MariaDB server. I haven't tried any other servers yet, so 
   `--database-mode => Use database (you need to create it) instead of spreadsheet.`<br>
   `--create-database => Create database for storing the data.`<br>
   `--choose-range [date1 date2] => Get averages between specific dates.`
-  
+  
+ 
+ ## Donate
+ <a href='https://ko-fi.com/A623366N' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://az743702.vo.msecnd.net/cdn/kofi4.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>

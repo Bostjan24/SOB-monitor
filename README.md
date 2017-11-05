@@ -30,4 +30,4 @@ I run the database on MariaDB server. I haven't tried any other servers yet, so 
   
  
  ## Donate
-paypal.me/plankobostjan
+[PayPal](https://paypal.me/plankobostjan)
